@@ -13,3 +13,24 @@
 
 Итоговая таблица должна быть отсортирована по убыванию выручки брендов».
 */
+DEFINE
+    MEASURE 'Sales'[Total Sales] =
+        SUMX ( 'Sales', Sales[Quantity] * Sales[Net Price] )
+    MEASURE 'Sales'[Cumulative Sales] =
+        VAR CurrentSales = [Total Sales]
+        VAR _Result =
+            CALCULATE (
+                [Total Sales],
+                FILTER ( ALLSELECTED ( 'Product'[Brand] ), [Total Sales] >= CurrentSales )
+            )
+        RETURN
+            _Result
+
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Product'[Brand],
+    TREATAS ( { "CY 2008" }, 'Date'[Calendar Year] ),
+    "Total Sales", [Total Sales],
+    "Cumulative Sales", [Cumulative Sales]
+)
+ORDER BY [Cumulative Sales] ASC
